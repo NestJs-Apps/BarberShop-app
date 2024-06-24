@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Client } from 'src/client/entities/client.entity';
 import { Barber } from 'src/barber/entities/barber.entity';
+import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
 
 @Entity()
 export class Schedule {
@@ -8,15 +9,18 @@ export class Schedule {
   idSchedule: number;
 
   @Column()
-  date: Date;
+  appointmentDate: Date;
 
-  @Column()
-  time: string;
+  @Column({ nullable: true })
+  serviceDescription: string;
 
-  @ManyToOne(() => Client, client => client.schedules)
-  client: Client;
+  @OneToMany(() => ScheduleDetails, (scheduleDetails) => scheduleDetails.schedule)
+  scheduleDetails: ScheduleDetails[];
 
-  @ManyToOne(() => Barber, barber => barber.schedules)
-  barber: Barber;
+  @CreateDateColumn({ type: 'datetime', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'datetime', name: 'updated_at' })
+  updatedAt: Date;
 }
 

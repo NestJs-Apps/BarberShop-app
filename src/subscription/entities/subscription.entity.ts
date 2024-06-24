@@ -16,12 +16,7 @@ export class Subscription {
   @Column('decimal')
   price: number;
 
-  @ManyToMany(() => Client, client => client.clientSubscriptions)
-  @JoinTable()
-  clients: Client[];
-
   @OneToMany(() => ClientSubscription, clientSubscriptions => clientSubscriptions.subscription)
-  @JoinTable()
   clientSubscriptions: ClientSubscription[];
 
   @CreateDateColumn()

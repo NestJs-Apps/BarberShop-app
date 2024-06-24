@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Schedule } from 'src/schedule//entities/schedule.entity';
+import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
 
 @Entity()
 export class Barber {
@@ -26,8 +27,8 @@ export class Barber {
   @JoinColumn()
   user: User;
 
-  @OneToMany(() => Schedule, schedule => schedule.barber)
-  schedules: Schedule[];
+  @OneToMany(() => ScheduleDetails, scheduleDetails => scheduleDetails.barber)
+  scheduleDetails: ScheduleDetails[];
 
   @CreateDateColumn({ type: 'datetime', name: 'created_at' })
   createdAt: Date;

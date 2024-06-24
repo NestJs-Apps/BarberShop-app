@@ -12,11 +12,11 @@ export class User {
   typeUSer: RolesEnum;
 
   @OneToOne(() => Client, client => client.user, { cascade: true })
-  @JoinColumn()
+  @JoinColumn({ name: 'clientId' })
   client: Client;
 
   @OneToOne(() => Barber, barber => barber.user, { cascade: true })
-  @JoinColumn()
+  @JoinColumn({ name: 'barberId' })
   barber: Barber;
 
   @CreateDateColumn({ type: 'datetime', name: 'created_at' })

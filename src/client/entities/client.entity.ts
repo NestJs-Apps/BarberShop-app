@@ -3,6 +3,7 @@ import { User } from 'src/user/entities/user.entity';
 import { Schedule } from 'src/schedule/entities/schedule.entity';
 import { Subscription } from 'src/subscription/entities/subscription.entity';
 import { ClientSubscription } from 'src/client-subscription/entities/client-subscription.entity';
+import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
 
 @Entity()
 export class Client {
@@ -25,11 +26,11 @@ export class Client {
   phone: string;
 
   @OneToOne(() => User, user => user.client)
-  @JoinColumn()
+  @JoinColumn({ name: 'userId' })
   user: User;
 
-  @OneToMany(() => Schedule, schedule => schedule.client)
-  schedules: Schedule[];
+  @OneToMany(() => ScheduleDetails, scheduleDetails => scheduleDetails.client)
+  scheduleDetails: ScheduleDetails[];
 
   @OneToMany(() => ClientSubscription, clientSubscriptions => clientSubscriptions.client)
   clientSubscriptions: ClientSubscription[];

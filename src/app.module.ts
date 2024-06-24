@@ -13,6 +13,8 @@ import { Client } from './client/entities/client.entity';
 import { Schedule } from './schedule/entities/schedule.entity';
 import { Subscription } from './subscription/entities/subscription.entity';
 import { ClientSubscription } from './client-subscription/entities/client-subscription.entity';
+import { ScheduleDetailModule } from './schedule-detail/schedule-detail.module';
+import { ScheduleDetails } from './schedule-detail/entities/schedule-details.entity';
 
 
 @Module({
@@ -38,6 +40,7 @@ import { ClientSubscription } from './client-subscription/entities/client-subscr
           Client,
           Schedule,
           Subscription,
+          ScheduleDetails,
           ClientSubscription,
         ],
       }),
@@ -46,7 +49,7 @@ import { ClientSubscription } from './client-subscription/entities/client-subscr
     UserModule,
     ClientModule,
     BarberModule, 
-    ScheduleModule, SubscriptionModule, ClientSubscriptionModule,
+    ScheduleModule, SubscriptionModule, ClientSubscriptionModule, ScheduleDetailModule,
   ],
   controllers: [],
   providers: [],
