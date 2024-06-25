@@ -2,17 +2,23 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { BarberService } from './barber.service';
 import { CreateBarberDto } from './dto/create-barber.dto';
 import { UpdateBarberDto } from './dto/update-barber.dto';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Barber')
 @Controller('barber')
 export class BarberController {
   constructor(private readonly barberService: BarberService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create a barber' })
+  @ApiBearerAuth()
   create(@Body() createBarberDto: CreateBarberDto) {
     return this.barberService.create(createBarberDto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all barber' })
+  @ApiBearerAuth()
   findAll() {
     return this.barberService.findAll();
   }

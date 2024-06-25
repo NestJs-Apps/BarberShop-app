@@ -5,19 +5,21 @@ import { UpdateClientDto } from './dto/update-client.dto';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { TypeUserEnum } from 'src/utils/enums/type-user.enum';
 
+@ApiTags('Client')
 @Controller('client')
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 
-  @ApiTags('Client')
-  @ApiOperation({ summary: 'Create a client' })
   @Post()
+  @ApiOperation({ summary: 'Create a client' })
   @ApiBearerAuth()
   async create(@Body() createClientDto: CreateClientDto) {
     return this.clientService.create(createClientDto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all clients' })
+  @ApiBearerAuth()
   findAll() {
     return this.clientService.findAll();
   }

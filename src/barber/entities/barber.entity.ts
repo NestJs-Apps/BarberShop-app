@@ -19,6 +19,9 @@ export class Barber {
   cpf: string;
 
   @Column()
+  codeBarber: string;
+
+  @Column()
   phone: string;
 
   @Column()

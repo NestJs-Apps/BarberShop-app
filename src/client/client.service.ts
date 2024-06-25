@@ -39,7 +39,7 @@ export class ClientService {
   };
 
   findAll() {
-    return `This action returns all client`;
+    return this.clientRepository.find();
   }
 
   findOne(id: number) {

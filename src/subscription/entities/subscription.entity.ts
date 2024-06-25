@@ -16,6 +16,9 @@ export class Subscription {
   @Column('decimal')
   price: number;
 
+  @Column()
+  typeSubscription: string;
+
   @OneToMany(() => ClientSubscription, clientSubscriptions => clientSubscriptions.subscription)
   clientSubscriptions: ClientSubscription[];
 

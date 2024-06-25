@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column } from 'typeorm';
 import { Client } from 'src/client/entities/client.entity';
 import { Subscription } from 'src/subscription/entities/subscription.entity';
 
@@ -6,6 +6,15 @@ import { Subscription } from 'src/subscription/entities/subscription.entity';
 export class ClientSubscription {
   @PrimaryGeneratedColumn()
   idClientSubscription: number;
+
+  @Column()
+  status: string;
+
+  @Column({ type: 'datetime' })
+  startDate: Date;
+  
+  @Column({ type: 'datetime' })
+  endDate: Date;
 
   @ManyToOne(() => Client, client => client.clientSubscriptions)
   @JoinColumn({ name: 'clientId' })
