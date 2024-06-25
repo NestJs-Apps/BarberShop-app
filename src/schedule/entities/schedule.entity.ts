@@ -9,7 +9,7 @@ export class Schedule {
   idSchedule: number;
 
   @Column()
-  appointmentDate: Date;
+  date: Date;
 
   @Column({ nullable: true })
   serviceDescription: string;

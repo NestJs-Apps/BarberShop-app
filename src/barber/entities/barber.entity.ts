@@ -1,6 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { User } from 'src/user/entities/user.entity';
-import { Schedule } from 'src/schedule//entities/schedule.entity';
 import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
 
 @Entity()
@@ -23,9 +21,8 @@ export class Barber {
   @Column()
   phone: string;
 
-  @OneToOne(() => User, user => user.barber)
-  @JoinColumn()
-  user: User;
+  @Column()
+  typeUser: string;
 
   @OneToMany(() => ScheduleDetails, scheduleDetails => scheduleDetails.barber)
   scheduleDetails: ScheduleDetails[];

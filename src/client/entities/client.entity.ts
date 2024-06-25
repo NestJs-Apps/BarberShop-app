@@ -1,7 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { User } from 'src/user/entities/user.entity';
-import { Schedule } from 'src/schedule/entities/schedule.entity';
-import { Subscription } from 'src/subscription/entities/subscription.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { ClientSubscription } from 'src/client-subscription/entities/client-subscription.entity';
 import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
 
@@ -25,9 +22,8 @@ export class Client {
   @Column()
   phone: string;
 
-  @OneToOne(() => User, user => user.client)
-  @JoinColumn({ name: 'userId' })
-  user: User;
+  @Column()
+  typeUser: string;
 
   @OneToMany(() => ScheduleDetails, scheduleDetails => scheduleDetails.client)
   scheduleDetails: ScheduleDetails[];

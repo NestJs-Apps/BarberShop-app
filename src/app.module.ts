@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { UserModule } from './user/user.module';
 import { ClientModule } from './client/client.module';
 import { BarberModule } from './barber/barber.module';
 import { ScheduleModule } from './schedule/schedule.module';
@@ -7,7 +6,6 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { ClientSubscriptionModule } from './client-subscription/client-subscription.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './user/entities/user.entity';
 import { Barber } from './barber/entities/barber.entity';
 import { Client } from './client/entities/client.entity';
 import { Schedule } from './schedule/entities/schedule.entity';
@@ -15,7 +13,6 @@ import { Subscription } from './subscription/entities/subscription.entity';
 import { ClientSubscription } from './client-subscription/entities/client-subscription.entity';
 import { ScheduleDetailModule } from './schedule-detail/schedule-detail.module';
 import { ScheduleDetails } from './schedule-detail/entities/schedule-details.entity';
-
 
 @Module({
   imports: [
@@ -35,7 +32,6 @@ import { ScheduleDetails } from './schedule-detail/entities/schedule-details.ent
         autoLoadEntities: true,
         synchronize: true,
         entities: [
-          User,
           Barber,
           Client,
           Schedule,
@@ -46,10 +42,12 @@ import { ScheduleDetails } from './schedule-detail/entities/schedule-details.ent
       }),
       inject: [ConfigService]
     }),
-    UserModule,
     ClientModule,
     BarberModule, 
-    ScheduleModule, SubscriptionModule, ClientSubscriptionModule, ScheduleDetailModule,
+    ScheduleModule,
+    SubscriptionModule,
+    ClientSubscriptionModule,
+    ScheduleDetailModule,
   ],
   controllers: [],
   providers: [],
