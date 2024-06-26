@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,11 +13,11 @@ export class SubscriptionService {
   ) {}
 
   async create(createSubscriptionDto: CreateSubscriptionDto) {
-    const subscrioption = await this.subscriptionRepository.findOne({
+    const subscription = await this.subscriptionRepository.findOne({
       where: { name: createSubscriptionDto.name },
     });
 
-    if (subscrioption)
+    if (subscription)
       throw new BadRequestException('Subscription already exists in database.');
 
     const createSubscription = this.subscriptionRepository.create(
@@ -31,8 +31,15 @@ export class SubscriptionService {
     return this.subscriptionRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} subscription`;
+  async findOneById(id: number) {
+    const subscription = await this.subscriptionRepository.findOne({
+      where: { id: id },
+    });
+
+    if (!subscription) 
+      throw new NotFoundException('Client not found in database.');
+    
+      return subscription;
   }
 
   update(id: number, updateSubscriptionDto: UpdateSubscriptionDto) {

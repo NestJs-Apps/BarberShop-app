@@ -19,7 +19,7 @@ export class ClientService {
     });
 
     if (client) 
-      throw new NotFoundException('Client already exists in database.');
+      throw new BadRequestException('Client already exists in database.');
 
     if (createClientDto.password !== createClientDto.confirmedPassword)
       throw new BadRequestException('Passwords must be identical');
@@ -39,11 +39,24 @@ export class ClientService {
   };
 
   findAll() {
-    return this.clientRepository.find();
+    return this.clientRepository.find({
+      relations: ['clientSubscriptions']
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} client`;
+  async findOneById(id: number) {
+    const client = await this.clientRepository.findOne({
+      where: { idClient: id },
+      relations: [
+        'clientSubscriptions',
+        'clientSubscriptions.subscription',
+      ],
+    });
+
+    if (!client) 
+      throw new NotFoundException('Client not found in database.');
+    
+      return client;
   }
 
   update(id: number, updateClientDto: UpdateClientDto) {

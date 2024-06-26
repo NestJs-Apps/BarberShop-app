@@ -7,9 +7,6 @@ export class ClientSubscription {
   @PrimaryGeneratedColumn()
   idClientSubscription: number;
 
-  @Column()
-  status: string;
-
   @Column({ type: 'datetime' })
   startDate: Date;
   
