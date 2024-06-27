@@ -7,6 +7,7 @@ import { ClientService } from 'src/client/client.service';
 import { CreateClientSubscriptionDto } from 'src/client-subscription/dto/create-client-subscription.dto';
 import { TypeSubscriptionEnum } from 'src/utils/enums/type-subscription.enum';
 import { StatusSubscriptionEnum } from 'src/utils/enums/status-subscription.enum';
+import { start } from 'repl';
 
 @Injectable()
 export class ClientSubscriptionService {
@@ -22,23 +23,16 @@ export class ClientSubscriptionService {
 
     const client = await this.clientService.findOneById(idClient);
     const subscription = await this.subscriptionService.findOneById(idSubscription);
+    const currentSubscription = client.clientSubscriptions[0];
 
     let startDate = new Date()
     let endDate: Date;
 
-    if (client.clientSubscriptions) {
+    if (currentSubscription) {
       throw new BadRequestException(`The client ${client.name} already has a subscription`);
-    }
+    };
 
-    if (subscription.typeSubscription === TypeSubscriptionEnum.MENSAL) {
-      endDate = new Date(startDate);
-      endDate.setMonth(startDate.getMonth() + 1);
-    } else if (subscription.typeSubscription === TypeSubscriptionEnum.ANUAL) {
-      endDate = new Date(startDate);
-      endDate.setFullYear(startDate.getFullYear() + 1);
-    } else {
-      throw new BadRequestException('Invalid subscription type');
-    }
+    this.validateDateTypeSignature(currentSubscription.subscription.typeSubscription);
 
     const clientSubscription = this.clientSubscriptionRepository.create({
       client,
@@ -77,12 +71,12 @@ export class ClientSubscriptionService {
 
   async clientCancelSubscription(idClient: number) {
     const client = await this.clientService.findOneById(idClient);
+    const currentSubscription = client.clientSubscriptions[0];
 
-    if (client.clientSubscriptions.length === 0) {
+    if (!currentSubscription) {
       throw new NotFoundException('Client does not have a signed plan');
     };
 
-    const currentSubscription = client.clientSubscriptions[0];
     
     if (currentSubscription.status === StatusSubscriptionEnum.CANCELLED) {
       throw new NotFoundException('This subscription is already cancelled');
@@ -102,12 +96,12 @@ export class ClientSubscriptionService {
 
   async clientViewsSignature(idClient: number) {
     const client = await this.clientService.findOneById(idClient);
+    const currentSignature = client.clientSubscriptions[0];
 
-    if (client.clientSubscriptions.length === 0) {
+    if (!currentSignature) {
       throw new NotFoundException('Client does not have a signed plan');
     };
 
-    const currentSignature = client.clientSubscriptions[0];
 
     const response: any = {
       name: currentSignature.subscription.name,
@@ -117,7 +111,8 @@ export class ClientSubscriptionService {
         ? StatusSubscriptionEnum.ACTIVE 
         : currentSignature.status,
       typeSubscription: currentSignature.subscription.typeSubscription,
-      createdAt: currentSignature.subscription.createdAt,
+      startDate: currentSignature.startDate,
+      endDate: currentSignature.endDate,
     };
 
     const cancellationDate = currentSignature.cancellationDate;
@@ -127,6 +122,51 @@ export class ClientSubscriptionService {
 
     return response;
   };
+
+  async clientUpdateSignature(idClient: number, idSubscription: number) {
+    const client = await this.clientService.findOneById(idClient);
+    const subscription = await this.subscriptionService.findOneById(idSubscription);
+    const currentSignature = client.clientSubscriptions[0];
+
+    if (!currentSignature) {
+      throw new NotFoundException('Client does not have a signed plan');
+    };
+
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    };
+
+    
+    currentSignature.subscription = subscription;
+    currentSignature.status = currentSignature.status === StatusSubscriptionEnum.CANCELLED
+      ? StatusSubscriptionEnum.ACTIVE
+      : currentSignature.status;
+    currentSignature.cancellationDate = null;
+
+    this.validateDateTypeSignature(currentSignature.subscription.typeSubscription);
+
+    await this.clientSubscriptionRepository.save(currentSignature);
+
+    return {
+      message: `Updated subscription with success.`,
+      subscription: currentSignature.subscription,
+    };
+  }
+  
+  async validateDateTypeSignature(typeSubscription: string) {
+    let startDate = new Date();
+    let endDate: Date;
+    
+    if (typeSubscription === TypeSubscriptionEnum.MENSAL) {
+      endDate = new Date(startDate);
+      endDate.setMonth(startDate.getMonth() + 1);
+    } else if (typeSubscription === TypeSubscriptionEnum.ANUAL) {
+      endDate = new Date(startDate);
+      endDate.setFullYear(startDate.getFullYear() + 1);
+    } else {
+      throw new BadRequestException('Invalid subscription type');
+    }
+  } 
 }
 
 

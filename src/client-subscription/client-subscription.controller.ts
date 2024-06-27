@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Query, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { ClientSubscriptionService } from './client-subscription.service';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { CreateClientSubscriptionDto } from './dto/create-client-subscription.dto';
@@ -26,6 +26,16 @@ export class ClientSubscriptionController {
     @Param('idClient', ParseIntPipe) idclient: number,
   ) {
     return this.clientSubscriptionService.clientCancelSubscription(idclient);
+  }
+
+  @Patch('client/:idClient/subscription/:idSubscription/updated-subscriprion')
+  @ApiOperation({ summary: 'Client updated a plan' })
+  @ApiBearerAuth()
+  async clientUpdateSubscription(
+    @Param('idClient', ParseIntPipe) idclient: number,
+    @Param('idSubscription', ParseIntPipe) idSubscription: number,
+  ) {
+    return this.clientSubscriptionService.clientUpdateSignature(idclient, idSubscription);
   }
 
   @Get('idClient/:idClient/views-signature')
