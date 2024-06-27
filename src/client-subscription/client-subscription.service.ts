@@ -32,7 +32,7 @@ export class ClientSubscriptionService {
       throw new BadRequestException(`The client ${client.name} already has a subscription`);
     };
 
-    this.validateDateTypeSignature(currentSubscription.subscription.typeSubscription);
+    this.validateSubscriptionPeriod(currentSubscription.subscription.typeSubscription);
 
     const clientSubscription = this.clientSubscriptionRepository.create({
       client,
@@ -143,7 +143,7 @@ export class ClientSubscriptionService {
       : currentSignature.status;
     currentSignature.cancellationDate = null;
 
-    this.validateDateTypeSignature(currentSignature.subscription.typeSubscription);
+    this.validateSubscriptionPeriod(currentSignature.subscription.typeSubscription);
 
     await this.clientSubscriptionRepository.save(currentSignature);
 
@@ -153,7 +153,7 @@ export class ClientSubscriptionService {
     };
   }
   
-  async validateDateTypeSignature(typeSubscription: string) {
+  async validateSubscriptionPeriod(typeSubscription: string) {
     let startDate = new Date();
     let endDate: Date;
     
