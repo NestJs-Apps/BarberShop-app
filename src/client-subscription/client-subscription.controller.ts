@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { ClientSubscriptionService } from './client-subscription.service';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { CreateClientSubscriptionDto } from './dto/create-client-subscription.dto';
 
 @ApiTags('Client Subscription')
@@ -17,6 +17,24 @@ export class ClientSubscriptionController {
     @Body() createClienteSubscriptionDto: CreateClientSubscriptionDto,
   ) {
     return this.clientSubscriptionService.clientSignAPlan(createClienteSubscriptionDto);
+  }
+
+  @Patch('idClient/:idClient/cancelled-subscriprion')
+  @ApiOperation({ summary: 'Client cancel a plan' })
+  @ApiBearerAuth()
+  async clientCancelSubscription(
+    @Param('idClient', ParseIntPipe) idclient: number,
+  ) {
+    return this.clientSubscriptionService.clientCancelSubscription(idclient);
+  }
+
+  @Get('idClient/:idClient/views-signature')
+  @ApiOperation({ summary: 'Client views your signature' })
+  @ApiBearerAuth()
+  async clientViewsYourSignature(
+    @Param('idClient', ParseIntPipe) idclient: number,
+  ) {
+    return this.clientSubscriptionService.clientViewsSignature(idclient);
   }
 
 }
