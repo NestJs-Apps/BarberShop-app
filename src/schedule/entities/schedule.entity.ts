@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { Client } from 'src/client/entities/client.entity';
-import { Barber } from 'src/barber/entities/barber.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn, JoinColumn, ManyToOne } from 'typeorm';
 import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
+import { Barber } from 'src/barber/entities/barber.entity';
+import { IsDate } from 'class-validator';
+import { Expose, Transform } from 'class-transformer';
 
 @Entity()
 export class Schedule {
@@ -9,10 +10,14 @@ export class Schedule {
   idSchedule: number;
 
   @Column()
+  @IsDate()
+  @Transform(({ value }) => new Date(value), { toClassOnly: true })
+  @Expose({ name: 'date' })
   date: Date;
 
-  @Column({ nullable: true })
-  serviceDescription: string;
+  @ManyToOne(() => Barber, (barber) => barber.schedules)
+  @JoinColumn({ name: 'barberId', referencedColumnName: 'idBarber' })
+  barber: Barber;
 
   @OneToMany(() => ScheduleDetails, (scheduleDetails) => scheduleDetails.schedule)
   scheduleDetails: ScheduleDetails[];

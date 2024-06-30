@@ -31,6 +31,25 @@ export class ClientController {
     return this.clientService.findOneById(id);
   }
 
+  @Get(':id/barbers/:idBarber/schedules')
+  @ApiOperation({ summary: 'Find available schedules' })
+  @ApiBearerAuth()
+  findAvailableSchedules(
+    @Param('idBarber') idBarber: number,
+  ) {
+    return this.clientService.findAvailableSchedules(idBarber);
+  }
+
+  @Post(':id/schedules/:scheduleId/book')
+  @ApiOperation({ summary: 'Find available schedules' })
+  @ApiBearerAuth()
+  bookSchedule(
+    @Param('id') clientId: number,
+    @Param('scheduleId') scheduleId: number,
+  ) {
+    return this.clientService.reserveSchedule(clientId, scheduleId);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto) {
     return this.clientService.update(+id, updateClientDto);

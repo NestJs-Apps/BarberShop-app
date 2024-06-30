@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBarberDto } from './dto/create-barber.dto';
 import { UpdateBarberDto } from './dto/update-barber.dto';
 import { Repository } from 'typeorm';
@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { TypeUserEnum } from 'src/utils/enums/type-user.enum';
 import { v4 as uuid } from 'uuid';
+import { Schedule } from 'src/schedule/entities/schedule.entity';
 
 @Injectable()
 export class BarberService {
@@ -37,14 +38,32 @@ export class BarberService {
     });
 
     return this.barberRepository.save(createBarber);
-  }
+  };
 
   findAll() {
     return this.barberRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} barber`;
+  async findOneById(id: number) {
+    const barber = await this.barberRepository.findOne({
+      where: { idBarber: id },
+      relations: [
+        'schedules',
+        'scheduleDetails',
+        'scheduleDetails.schedule',
+      ],
+    });
+
+    if (!barber)
+      throw new NotFoundException('Barber not found.');
+
+    const response: Partial<Barber> = {
+      name: barber.name,
+      email: barber.email,
+      schedules: barber.schedules,
+    };
+
+    return response;
   }
 
   update(id: number, updateBarberDto: UpdateBarberDto) {

@@ -7,7 +7,6 @@ import { ClientService } from 'src/client/client.service';
 import { CreateClientSubscriptionDto } from 'src/client-subscription/dto/create-client-subscription.dto';
 import { TypeSubscriptionEnum } from 'src/utils/enums/type-subscription.enum';
 import { StatusSubscriptionEnum } from 'src/utils/enums/status-subscription.enum';
-import { start } from 'repl';
 
 @Injectable()
 export class ClientSubscriptionService {

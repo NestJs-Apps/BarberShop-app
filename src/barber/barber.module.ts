@@ -9,6 +9,7 @@ import { Barber } from './entities/barber.entity';
     TypeOrmModule.forFeature([Barber]),
   ],
   controllers: [BarberController],
-  providers: [BarberService]
+  providers: [BarberService],
+  exports: [BarberService],
 })
 export class BarberModule {}

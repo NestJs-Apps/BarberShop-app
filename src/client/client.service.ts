@@ -6,13 +6,24 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Client } from './entities/client.entity';
 import * as bcrypt from 'bcrypt';
 import { TypeUserEnum } from 'src/utils/enums/type-user.enum';
+import { Barber } from 'src/barber/entities/barber.entity';
+import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
+import { Schedule } from 'src/schedule/entities/schedule.entity';
+import { StatusSubscriptionEnum } from 'src/utils/enums/status-subscription.enum';
 
 @Injectable()
 export class ClientService {
   constructor(
     @InjectRepository(Client)
     private readonly clientRepository: Repository<Client>,
+    @InjectRepository(Barber)
+    private barberRepository: Repository<Barber>,
+    @InjectRepository(Schedule)
+    private scheduleRepository: Repository<Schedule>,
+    @InjectRepository(ScheduleDetails)
+    private scheduleDetailsRepository: Repository<ScheduleDetails>,
   ) {}
+
   async create(createClientDto: CreateClientDto) {
     const client = await this.clientRepository.findOne({
       where: { cpf: createClientDto.cpf },
@@ -38,11 +49,62 @@ export class ClientService {
     return clientEntity;
   };
 
-  findAll() {
+  async findAvailableSchedules(idBarber: number) {
+    const barber = await this.barberRepository.findOne({
+      where: { idBarber },
+      relations: ['schedules'],
+      select: ['name', 'email', 'schedules'],
+    });
+
+    if (!barber) {
+      throw new NotFoundException('Barber not found.');
+    };
+
+    if (barber.schedules.length < 0) {
+      throw new NotFoundException('Barber not have schedulings.');
+    }
+
+    return barber.schedules;
+  };
+
+  async reserveSchedule(idClient: number, idSchedule: number) {
+    const client = await this.findOneById(idClient);
+
+    const schedule = await this.scheduleRepository.findOne({
+      where: { idSchedule: idSchedule },
+      relations: ['scheduleDetails'],
+    });
+
+    if (!schedule) {
+      throw new NotFoundException('Schedule not found.');
+    };
+
+    const reservedSchedule = schedule.scheduleDetails.some(
+      detail => detail.client,
+    );
+
+    if (reservedSchedule) {
+      throw new BadRequestException('Schedule already booked');
+    };
+
+    if (client.clientSubscriptions[0].status === StatusSubscriptionEnum.CANCELLED) {
+      throw new BadRequestException('Client with canceled subscription');
+    };
+
+    const scheduleDetails = this.scheduleDetailsRepository.create({
+      client,
+      schedule,
+      barber: schedule.barber,
+    });
+
+    return this.scheduleDetailsRepository.save(scheduleDetails);
+  }
+
+  async findAll() {
     return this.clientRepository.find({
       relations: ['clientSubscriptions']
     });
-  }
+  };
 
   async findOneById(id: number) {
     const client = await this.clientRepository.findOne({

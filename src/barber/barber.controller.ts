@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { BarberService } from './barber.service';
 import { CreateBarberDto } from './dto/create-barber.dto';
 import { UpdateBarberDto } from './dto/update-barber.dto';
@@ -24,8 +24,8 @@ export class BarberController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.barberService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) idBarber: number) {
+    return this.barberService.findOneById(idBarber);
   }
 
   @Patch(':id')

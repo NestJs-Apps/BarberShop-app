@@ -6,13 +6,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { ClientSubscriptionModule } from './client-subscription/client-subscription.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Barber } from './barber/entities/barber.entity';
-import { Client } from './client/entities/client.entity';
-import { Schedule } from './schedule/entities/schedule.entity';
-import { Subscription } from './subscription/entities/subscription.entity';
-import { ClientSubscription } from './client-subscription/entities/client-subscription.entity';
 import { ScheduleDetailModule } from './schedule-detail/schedule-detail.module';
-import { ScheduleDetails } from './schedule-detail/entities/schedule-details.entity';
 
 @Module({
   imports: [
@@ -29,18 +23,12 @@ import { ScheduleDetails } from './schedule-detail/entities/schedule-details.ent
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
+        timezone: 'Z',
         autoLoadEntities: true,
         synchronize: true,
-        entities: [
-          Barber,
-          Client,
-          Schedule,
-          Subscription,
-          ScheduleDetails,
-          ClientSubscription,
-        ],
+        entities: [__dirname + '**/*.entities/{.ts.,js}'],
       }),
-      inject: [ConfigService]
+      inject: [ConfigService],
     }),
     ClientModule,
     BarberModule, 

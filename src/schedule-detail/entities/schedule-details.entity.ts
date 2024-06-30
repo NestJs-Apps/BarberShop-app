@@ -1,12 +1,15 @@
 import { Barber } from "src/barber/entities/barber.entity";
 import { Client } from "src/client/entities/client.entity";
 import { Schedule } from "src/schedule/entities/schedule.entity";
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, Column } from "typeorm";
 
 @Entity()
 export class ScheduleDetails {
     @PrimaryGeneratedColumn()
     id: number;
+
+    @Column({ nullable: true })
+    serviceDescription: string;
 
     @ManyToOne(() => Schedule, (schedule) => schedule.scheduleDetails)
     @JoinColumn({ name: 'scheduleId' })
