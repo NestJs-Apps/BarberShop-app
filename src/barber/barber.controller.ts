@@ -25,7 +25,7 @@ export class BarberController {
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) idBarber: number) {
-    return this.barberService.findOneById(idBarber);
+    return this.barberService.findBarberWithSchedules(idBarber);
   }
 
   @Patch(':id')

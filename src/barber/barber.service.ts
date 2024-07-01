@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { TypeUserEnum } from 'src/utils/enums/type-user.enum';
 import { v4 as uuid } from 'uuid';
-import { Schedule } from 'src/schedule/entities/schedule.entity';
+import { subHours } from 'date-fns';
 
 @Injectable()
 export class BarberService {
@@ -52,6 +52,7 @@ export class BarberService {
         'scheduleDetails',
         'scheduleDetails.schedule',
       ],
+      select: ['idBarber', 'name', 'email', 'schedules'],
     });
 
     if (!barber)
@@ -66,6 +67,26 @@ export class BarberService {
     return response;
   }
 
+  async findBarberWithSchedules(idBarber: number) {
+    const barber = await this.barberRepository.findOne({
+      where: { idBarber },
+      relations: ['schedules'],
+      select: ['idBarber', 'name', 'email', 'schedules'],
+    });
+
+    if (!barber)
+      throw new NotFoundException('Barber not found.');
+
+    barber.schedules = barber.schedules.map(schedule => {
+      return {
+        ...schedule,
+        date: subHours(schedule.date, 3)
+      };
+    });
+
+    return barber;
+  }
+
   update(id: number, updateBarberDto: UpdateBarberDto) {
     return `This action updates a #${id} barber`;
   }
@@ -73,4 +94,8 @@ export class BarberService {
   remove(id: number) {
     return `This action removes a #${id} barber`;
   }
+
+  async saveBarber(barber: Partial<Barber>) {
+    return this.barberRepository.save(barber);
+  };
 }

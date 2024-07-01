@@ -21,11 +21,5 @@ export class Schedule {
 
   @OneToMany(() => ScheduleDetails, (scheduleDetails) => scheduleDetails.schedule)
   scheduleDetails: ScheduleDetails[];
-
-  @CreateDateColumn({ type: 'datetime', name: 'created_at' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ type: 'datetime', name: 'updated_at' })
-  updatedAt: Date;
 }
 

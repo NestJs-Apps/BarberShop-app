@@ -2,50 +2,33 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Schedule } from './entities/schedule.entity';
-import { format, isMatch, isValid, parse } from 'date-fns';
-import { Barber } from 'src/barber/entities/barber.entity';
+import { parse, subHours } from 'date-fns';
 import { PaginationDto } from 'src/utils/pagination.dto';
+import * as moment from 'moment-timezone';
+import { BarberService } from 'src/barber/barber.service';
 
 @Injectable()
 export class ScheduleService {
   constructor(
     @InjectRepository(Schedule)
     private readonly scheduleRepository: Repository<Schedule>,
-    @InjectRepository(Barber)
-    private readonly barberRepository: Repository<Barber>,
+    private readonly barberService: BarberService,
   ) {}
 
   async createSchedule(idBarber: number, date: string) {
-    const barber = await this.barberRepository.findOne({
-      where: { idBarber },
-      relations: [
-        'schedules',
-        'scheduleDetails',
-        'scheduleDetails.schedule',
-      ],
-      select: ['idBarber', 'name', 'email'],
-    });
+    const barber = await this.barberService.findBarberWithSchedules(idBarber);
 
-    if (!barber) {
-      throw new NotFoundException('Barber not found');
-    };
-
-    const dateFormat = 'dd-MM-yyyy HH:mm';
-    if (!isMatch(date, dateFormat)) {
-      throw new BadRequestException(`Invalid date format. Expected format: ${dateFormat}`);
-    }
-
-    const parseDate: Date = parse(date, dateFormat, new Date());
-
-    if (!isValid(parseDate)) {
-      throw new BadRequestException('Invalid date format. Expected format: dd-MM-yyyy HH:mm')
-    };
-
-    const formatDate = format(parseDate, 'yyyy-MM-dd HH:mm');
+    const parsedDate = parse(date, 'dd-MM-yyyy HH:mm', new Date())
     
+    if (isNaN(parsedDate.getTime())) {
+      throw new BadRequestException('Invalid date format');
+    };    
+
+    const adjustedDate = subHours(parsedDate, 3);
+
     const existingSchedule = await this.scheduleRepository.findOne({
       where: {
-        date: parseDate,
+        date: adjustedDate,
         barber: {
           idBarber: barber.idBarber,
         }
@@ -57,15 +40,14 @@ export class ScheduleService {
     };
 
     const schedule = this.scheduleRepository.create({
-      date: formatDate, 
+      date: adjustedDate, 
       barber,
     });
     
     barber.schedules.push(schedule);
+    await this.barberService.saveBarber(barber);
     
     const savedSchedule = await this.scheduleRepository.save(schedule);
-    
-    await this.barberRepository.save(barber);
 
     const response: Partial<Schedule> = {
       idSchedule: savedSchedule.idSchedule,
@@ -85,26 +67,29 @@ export class ScheduleService {
   }
 
   async findOneScheduling(idBarber: number) {
-    const barber = await this.barberRepository.findOne({
-      where: { idBarber },
-      relations: ['schedules'],
+    const schedules = await this.scheduleRepository.find({
+      where: {barber: { idBarber }},
+      relations: ['barber'],
     });
-    
-    if (!barber)
-      throw new NotFoundException('Barber not found.');;
-
-    if (barber.schedules.length < 0) {
+  
+    if (!schedules.length) {
       throw new NotFoundException('Barber dont have scheduling');
     };
+
+    schedules.forEach(schedule => {
+      schedule.date = moment(schedule.date)
+        .tz('America/Sao_Paulo')
+        .toDate();
+    });
 
     let obj = {};
     let response = {};
 
-    for (const schedule of barber.schedules) {
-     response =  Object.assign(obj, {
-      idSchedule: schedule.idSchedule,
-      date: schedule.date,
-    });
+    for (const schedule of schedules) {
+      response =  Object.assign(obj, {
+        idSchedule: schedule.idSchedule,
+        date: schedule.date,
+      });
     };
 
     return response;
