@@ -13,7 +13,7 @@ export class BarberController {
   @ApiOperation({ summary: 'Create a barber' })
   @ApiBearerAuth()
   create(@Body() createBarberDto: CreateBarberDto) {
-    return this.barberService.create(createBarberDto);
+    return this.barberService.createBarber(createBarberDto);
   }
 
   @Get()
@@ -27,6 +27,15 @@ export class BarberController {
   findOne(@Param('id', ParseIntPipe) idBarber: number) {
     return this.barberService.findBarberWithSchedules(idBarber);
   }
+
+  @Get('barber-find/client-schedule')
+  @ApiOperation({ summary: 'Barber get all clients scheduling' })
+  @ApiBearerAuth()
+  async findClientScheduling(
+    @Query('idBarber') idBarber: number,
+  ) {
+    return this.barberService.findClientScheduling(idBarber);
+  };
 
   @Patch('client/cancel-schedule-detail')
   @ApiOperation({ summary: 'Barber cancelled scheduling details' })

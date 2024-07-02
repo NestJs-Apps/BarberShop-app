@@ -4,6 +4,8 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { TypeUserEnum } from 'src/utils/enums/type-user.enum';
+import { ServiceBarberEnum } from 'src/utils/enums/service-barber.enum';
+import { ReserveScheduleDto } from './dto/reserve-schedule.dto';
 
 @ApiTags('Client')
 @Controller('client')
@@ -43,12 +45,12 @@ export class ClientController {
   @Post('client/reserve-scheduling')
   @ApiOperation({ summary: 'Client reserve schedules' })
   @ApiBearerAuth()
+  @ApiQuery({ name: 'serviceBarber', enum: ServiceBarberEnum, required: false })
   bookSchedule(
-    @Query('idClient') idClient: number,
-    @Query('idSchedule') idSchedule: number,
-    @Query('idBarber') idBarber: number,
-  ) {
-    return this.clientService.reserveSchedule(idClient, idSchedule, idBarber);
+    @Body() reserveScheduleDto: ReserveScheduleDto,
+    @Query('serviceBarber') serviceBarber: ServiceBarberEnum,
+  )  {
+    return this.clientService.reserveSchedule(reserveScheduleDto, serviceBarber);
   }
 
   @Patch(':id')

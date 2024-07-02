@@ -11,6 +11,8 @@ import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.e
 import { Schedule } from 'src/schedule/entities/schedule.entity';
 import { StatusSubscriptionEnum } from 'src/utils/enums/status-subscription.enum';
 import { StatusScheduleEnum } from 'src/utils/enums/status-schedule.enum';
+import { ServiceBarberEnum } from 'src/utils/enums/service-barber.enum';
+import { ReserveScheduleDto } from './dto/reserve-schedule.dto';
 
 @Injectable()
 export class ClientService {
@@ -68,16 +70,19 @@ export class ClientService {
     return barber.schedules;
   };
 
-  async reserveSchedule(idClient: number, idSchedule: number, idBarber: number) {
-    const client = await this.findOneById(idClient);
+  async reserveSchedule(
+    reserveScheduleDto: ReserveScheduleDto,
+    serviceBarberEnum: ServiceBarberEnum,
+  ) {
+    const client = await this.findOneById(reserveScheduleDto.idClient);
 
     const schedule = await this.scheduleRepository.findOne({
-      where: { idSchedule: idSchedule },
+      where: { idSchedule: reserveScheduleDto.idSchedule },
       relations: ['scheduleDetails', 'scheduleDetails.schedule'],
     });
 
     const barber = await this.barberRepository.findOne({
-      where: { idBarber },
+      where: { idBarber: reserveScheduleDto.idBarber },
       relations: ['schedules', 'scheduleDetails'],
       select: ['idBarber', 'codeBarber', 'email', 'schedules', 'scheduleDetails'],
     })
@@ -107,6 +112,7 @@ export class ClientService {
       schedule,
       barber,
       status: StatusScheduleEnum.CONFIRMED,
+      serviceDescription: serviceBarberEnum || null, 
     });
 
     return this.scheduleDetailsRepository.save(scheduleDetails);

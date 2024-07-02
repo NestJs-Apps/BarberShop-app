@@ -1,6 +1,7 @@
 import { Barber } from "src/barber/entities/barber.entity";
 import { Client } from "src/client/entities/client.entity";
 import { Schedule } from "src/schedule/entities/schedule.entity";
+import { ServiceBarberEnum } from "src/utils/enums/service-barber.enum";
 import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, Column } from "typeorm";
 
 @Entity()
@@ -8,7 +9,7 @@ export class ScheduleDetails {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'enum', enum: ServiceBarberEnum })
     serviceDescription: string;
 
     @Column()

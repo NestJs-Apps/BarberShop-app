@@ -10,6 +10,7 @@ import { v4 as uuid } from 'uuid';
 import { subHours } from 'date-fns';
 import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
 import { StatusScheduleEnum } from 'src/utils/enums/status-schedule.enum';
+import { Client } from 'src/client/entities/client.entity';
 
 @Injectable()
 export class BarberService {
@@ -20,7 +21,7 @@ export class BarberService {
     private readonly scheduleDetailRepository: Repository<ScheduleDetails>,
   ) {}
 
-  async create(createBarberDto: CreateBarberDto) {
+  async createBarber(createBarberDto: CreateBarberDto) {
     const barber = await this.barberRepository.findOne({
       where: { cpf: createBarberDto.cpf },
     });
@@ -121,6 +122,57 @@ export class BarberService {
       idClient: scheduleDetail.client.idClient,
       idBarber: scheduleDetail.barber.idBarber,
     };  
+  }
+
+  async findClientScheduling(idBarber: number) {
+    await this.findOneById(idBarber);
+
+    const scheduleDetails = await this.scheduleDetailRepository.find({
+      where: { barber: { idBarber } },
+      relations: ['client', 'schedule'],
+    });
+
+    const clientsScheduling = scheduleDetails.filter(
+      detail => detail.client !== null,
+    );
+
+    if (clientsScheduling.length < 0) {
+      throw new NotFoundException('No scheduling with clients found')
+    };
+
+    const clients = clientsScheduling.map(detail => detail.client);
+    // Remove duplicados da lista de clientes
+    const uniqueClients = Array.from(new Set(clients.map(client => client.idClient)))
+        .map(idClient => {
+            return clients.find(client => client.idClient === idClient);
+        });
+
+    const client = uniqueClients.map((cl): Partial<Client> => {
+      return {
+        idClient: cl.idClient,
+        name: cl.name,
+        email: cl.email,
+        cpf: cl.cpf,
+      };
+    });
+
+    const clientSchedulingResponse = clientsScheduling.map((detail: Partial<ScheduleDetails>) => {
+      return {
+          idClient: detail.client.idClient,
+          idScheduleDetail: detail.id,
+          serviceDescription: detail.serviceDescription,
+          status: detail.status,
+          schedule: {
+              idSchedule: detail.schedule.idSchedule,
+              date: detail.schedule.date,
+          }
+      };
+  });
+
+    return {
+      client,
+      clientSchedulingResponse,
+    }
   }
 
   update(id: number, updateBarberDto: UpdateBarberDto) {
