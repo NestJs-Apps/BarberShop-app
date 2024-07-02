@@ -11,6 +11,9 @@ export class ScheduleDetails {
     @Column({ nullable: true })
     serviceDescription: string;
 
+    @Column()
+    status: string;
+
     @ManyToOne(() => Schedule, (schedule) => schedule.scheduleDetails)
     @JoinColumn({ name: 'scheduleId' })
     schedule: Schedule;

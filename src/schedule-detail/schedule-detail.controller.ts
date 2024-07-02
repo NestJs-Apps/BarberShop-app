@@ -15,15 +15,16 @@ export class ScheduleDetailController {
   async bookeSchedule(
     @Query('idClient') idClient: number,
     @Query('idSchedule') idSchedule: number,
+    @Query('idBarber') idBarber: number,
   ) {
-    return this.scheduleDetailService.reserveSchedule(idClient, idSchedule);
+    return this.scheduleDetailService.reserveSchedule(idClient, idSchedule, idBarber);
   };
 
   @Get('client/schedule')
-  @ApiOperation({ summary: 'Client booke a schedule' })
+  @ApiOperation({ summary: 'Barber get all clients scheduling' })
   @ApiBearerAuth()
   async findClientScheduling(
-    @Query('idCBarber') idBarber: number,
+    @Query('idBarber') idBarber: number,
   ) {
     return this.scheduleDetailService.findClientScheduling(idBarber);
   };

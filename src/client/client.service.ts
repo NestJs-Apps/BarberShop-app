@@ -10,6 +10,7 @@ import { Barber } from 'src/barber/entities/barber.entity';
 import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
 import { Schedule } from 'src/schedule/entities/schedule.entity';
 import { StatusSubscriptionEnum } from 'src/utils/enums/status-subscription.enum';
+import { StatusScheduleEnum } from 'src/utils/enums/status-schedule.enum';
 
 @Injectable()
 export class ClientService {
@@ -67,20 +68,30 @@ export class ClientService {
     return barber.schedules;
   };
 
-  async reserveSchedule(idClient: number, idSchedule: number) {
+  async reserveSchedule(idClient: number, idSchedule: number, idBarber: number) {
     const client = await this.findOneById(idClient);
 
     const schedule = await this.scheduleRepository.findOne({
       where: { idSchedule: idSchedule },
-      relations: ['scheduleDetails'],
+      relations: ['scheduleDetails', 'scheduleDetails.schedule'],
     });
+
+    const barber = await this.barberRepository.findOne({
+      where: { idBarber },
+      relations: ['schedules', 'scheduleDetails'],
+      select: ['idBarber', 'codeBarber', 'email', 'schedules', 'scheduleDetails'],
+    })
 
     if (!schedule) {
       throw new NotFoundException('Schedule not found.');
     };
 
+    if (!barber) {
+      throw new NotFoundException('Barber not found.');
+    };
+
     const reservedSchedule = schedule.scheduleDetails.some(
-      detail => detail.client,
+      detail => detail.status === StatusScheduleEnum.CONFIRMED,
     );
 
     if (reservedSchedule) {
@@ -94,7 +105,8 @@ export class ClientService {
     const scheduleDetails = this.scheduleDetailsRepository.create({
       client,
       schedule,
-      barber: schedule.barber,
+      barber,
+      status: StatusScheduleEnum.CONFIRMED,
     });
 
     return this.scheduleDetailsRepository.save(scheduleDetails);
@@ -112,6 +124,15 @@ export class ClientService {
       relations: [
         'clientSubscriptions',
         'clientSubscriptions.subscription',
+        'scheduleDetails.barber',
+      ],
+      select: [
+        'idClient',
+        'name',
+        'email',
+        'phone',
+        'scheduleDetails',
+        'clientSubscriptions',
       ],
     });
 

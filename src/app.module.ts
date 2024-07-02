@@ -26,7 +26,7 @@ import { ScheduleDetailModule } from './schedule-detail/schedule-detail.module';
         timezone: 'BRT',
         autoLoadEntities: true,
         synchronize: true,
-        entities: [__dirname + '**/*.entities/{.ts.,js}'],
+        entities: [__dirname + '**/*.entity/{.ts.,js}'],
       }),
       inject: [ConfigService],
     }),

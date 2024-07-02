@@ -40,14 +40,15 @@ export class ClientController {
     return this.clientService.findAvailableSchedules(idBarber);
   }
 
-  @Post(':id/schedules/:scheduleId/book')
-  @ApiOperation({ summary: 'Find available schedules' })
+  @Post('client/reserve-scheduling')
+  @ApiOperation({ summary: 'Client reserve schedules' })
   @ApiBearerAuth()
   bookSchedule(
-    @Param('id') clientId: number,
-    @Param('scheduleId') scheduleId: number,
+    @Query('idClient') idClient: number,
+    @Query('idSchedule') idSchedule: number,
+    @Query('idBarber') idBarber: number,
   ) {
-    return this.clientService.reserveSchedule(clientId, scheduleId);
+    return this.clientService.reserveSchedule(idClient, idSchedule, idBarber);
   }
 
   @Patch(':id')

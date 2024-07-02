@@ -8,12 +8,16 @@ import * as bcrypt from 'bcrypt';
 import { TypeUserEnum } from 'src/utils/enums/type-user.enum';
 import { v4 as uuid } from 'uuid';
 import { subHours } from 'date-fns';
+import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
+import { StatusScheduleEnum } from 'src/utils/enums/status-schedule.enum';
 
 @Injectable()
 export class BarberService {
   constructor(
     @InjectRepository(Barber)
     private readonly barberRepository: Repository<Barber>,
+    @InjectRepository(ScheduleDetails)
+    private readonly scheduleDetailRepository: Repository<ScheduleDetails>,
   ) {}
 
   async create(createBarberDto: CreateBarberDto) {
@@ -51,8 +55,9 @@ export class BarberService {
         'schedules',
         'scheduleDetails',
         'scheduleDetails.schedule',
+        'scheduleDetails.client',
       ],
-      select: ['idBarber', 'name', 'email', 'schedules'],
+      select: ['idBarber', 'name', 'email', 'schedules', 'scheduleDetails'],
     });
 
     if (!barber)
@@ -62,6 +67,7 @@ export class BarberService {
       name: barber.name,
       email: barber.email,
       schedules: barber.schedules,
+      scheduleDetails: barber.scheduleDetails,
     };
 
     return response;
@@ -85,6 +91,36 @@ export class BarberService {
     });
 
     return barber;
+  };
+
+  async cancelledSchedulingDetails(idBarber: number, idClient: number, idSchedule: number) {
+    const scheduleDetail = await this.scheduleDetailRepository.findOne({
+      where: {
+        barber: { idBarber },
+        client: { idClient },
+        schedule: { idSchedule },
+      },
+      relations: ['barber', 'client', 'schedule'],
+      select: ['id', 'barber', 'client', 'schedule', 'status'],
+    });
+
+    if (!scheduleDetail) {
+      throw new NotFoundException('Schedule details not found.');
+    };
+
+    if (scheduleDetail.status === StatusScheduleEnum.CANCELLED) {
+      throw new BadRequestException('This schedule detail is already cancelled');
+    };
+
+    scheduleDetail.status = StatusScheduleEnum.CANCELLED;
+    await this.scheduleDetailRepository.save(scheduleDetail);
+
+    return {
+      message: `Schedule detail of client: ${scheduleDetail.client.name} its cancelled.`,
+      idScheduleDetail: scheduleDetail.id,
+      idClient: scheduleDetail.client.idClient,
+      idBarber: scheduleDetail.barber.idBarber,
+    };  
   }
 
   update(id: number, updateBarberDto: UpdateBarberDto) {

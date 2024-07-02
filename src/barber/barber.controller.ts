@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query } from '@nestjs/common';
 import { BarberService } from './barber.service';
 import { CreateBarberDto } from './dto/create-barber.dto';
 import { UpdateBarberDto } from './dto/update-barber.dto';
@@ -26,6 +26,17 @@ export class BarberController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) idBarber: number) {
     return this.barberService.findBarberWithSchedules(idBarber);
+  }
+
+  @Patch('client/cancel-schedule-detail')
+  @ApiOperation({ summary: 'Barber cancelled scheduling details' })
+  @ApiBearerAuth()
+  async barberCancelledSchedulingDetail(
+    @Query('idBarber') ididBarber: number,
+    @Query('idClient') idClient: number,
+    @Query('idSchedule') idSchedule: number,
+  ) {
+    return this.barberService.cancelledSchedulingDetails(ididBarber, idClient, idSchedule);
   }
 
   @Patch(':id')
