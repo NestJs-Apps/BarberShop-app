@@ -55,8 +55,11 @@ export class ClientService {
   async findAvailableSchedules(idBarber: number) {
     const barber = await this.barberRepository.findOne({
       where: { idBarber },
-      relations: ['schedules'],
-      select: ['name', 'email', 'schedules'],
+      relations: [
+        'schedules',
+        'scheduleDetails',
+        'scheduleDetails.client',
+        'scheduleDetails.schedule'],
     });
 
     if (!barber) {
@@ -65,9 +68,28 @@ export class ClientService {
 
     if (barber.schedules.length < 0) {
       throw new NotFoundException('Barber not have schedulings.');
+    };
+
+     // Cria um conjunto com os IDs dos agendamentos que já possuem clientes associados
+    const bookedScheduleIds = new Set(
+      barber.scheduleDetails
+      .filter(detail => detail.client !== null)
+      .map(detail => detail.schedule.idSchedule)
+    )
+
+    // Filtra os agendamentos do barbeiro para encontrar os que não têm clientes associados
+    const availableSchedule = barber.schedules.filter(
+      schedule => !bookedScheduleIds.has(
+        schedule.idSchedule,
+      )
+    )
+
+    if (availableSchedule.length < 0) {
+      throw new NotFoundException('No available schedules found.');
     }
 
-    return barber.schedules;
+    // Retorna os agendamentos disponíveis.
+    return availableSchedule;
   };
 
   async reserveSchedule(

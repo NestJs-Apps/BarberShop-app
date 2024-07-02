@@ -3,7 +3,6 @@ import { ClientService } from './client.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { TypeUserEnum } from 'src/utils/enums/type-user.enum';
 import { ServiceBarberEnum } from 'src/utils/enums/service-barber.enum';
 import { ReserveScheduleDto } from './dto/reserve-schedule.dto';
 
@@ -26,20 +25,20 @@ export class ClientController {
     return this.clientService.findAll();
   }
 
+  @Get('find-available-schedules')
+  @ApiOperation({ summary: 'Find available schedules' })
+  @ApiBearerAuth()
+  findAvailableSchedules(
+    @Query('idBarber', ParseIntPipe) idBarber: number,
+  ) {
+    return this.clientService.findAvailableSchedules(idBarber);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get one client' })
   @ApiBearerAuth()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.clientService.findOneById(id);
-  }
-
-  @Get(':id/barbers/:idBarber/schedules')
-  @ApiOperation({ summary: 'Find available schedules' })
-  @ApiBearerAuth()
-  findAvailableSchedules(
-    @Param('idBarber') idBarber: number,
-  ) {
-    return this.clientService.findAvailableSchedules(idBarber);
   }
 
   @Post('client/reserve-scheduling')
