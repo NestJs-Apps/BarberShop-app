@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateClientDto } from './dto/create-client.dto';
-import { UpdateClientDto } from './dto/update-client.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Client } from './entities/client.entity';
@@ -13,6 +12,7 @@ import { StatusSubscriptionEnum } from 'src/utils/enums/status-subscription.enum
 import { StatusScheduleEnum } from 'src/utils/enums/status-schedule.enum';
 import { ServiceBarberEnum } from 'src/utils/enums/service-barber.enum';
 import { ReserveScheduleDto } from './dto/reserve-schedule.dto';
+import { ClientStatusEnum } from 'src/utils/enums/client-status.enum';
 
 @Injectable()
 export class ClientService {
@@ -45,6 +45,7 @@ export class ClientService {
       ...createClientDto,
       password: hashedPassword,
       typeUser: TypeUserEnum.CLIENT,
+      status: ClientStatusEnum.ALLOWED,
     });
     
     await this.clientRepository.save(clientEntity);
@@ -59,7 +60,8 @@ export class ClientService {
         'schedules',
         'scheduleDetails',
         'scheduleDetails.client',
-        'scheduleDetails.schedule'],
+        'scheduleDetails.schedule',
+      ],
     });
 
     if (!barber) {
@@ -106,7 +108,13 @@ export class ClientService {
     const barber = await this.barberRepository.findOne({
       where: { idBarber: reserveScheduleDto.idBarber },
       relations: ['schedules', 'scheduleDetails'],
-      select: ['idBarber', 'codeBarber', 'email', 'schedules', 'scheduleDetails'],
+      select: [
+        'idBarber',
+        'codeBarber',
+        'email',
+        'schedules',
+        'scheduleDetails',
+      ],
     })
 
     if (!schedule) {
@@ -141,40 +149,75 @@ export class ClientService {
   }
 
   async findAll() {
-    return this.clientRepository.find({
-      relations: ['clientSubscriptions']
-    });
+    return this.clientRepository.createQueryBuilder('client')
+      .select([
+        'client.idClient',
+        'client.name',
+        'client.email',
+        'client.phone',
+        'client.status',
+        'clientSubs.status',
+        'clientSubs.startDate',
+        'clientSubs.endDate',
+        'clientSubs.cancellationDate',
+        'clientSubs.idClientSubscription',
+        'clScheDetai.id',
+        'clScheDetai.status',
+        'barber.idBarber',
+        'barber.name',
+      ])
+      .leftJoin('client.clientSubscriptions', 'clientSubs')
+      .leftJoin('client.scheduleDetails', 'clScheDetai')
+      .leftJoin('clScheDetai.barber', 'barber')
+      .getMany();
   };
 
-  async findOneById(id: number) {
-    const client = await this.clientRepository.findOne({
-      where: { idClient: id },
-      relations: [
-        'clientSubscriptions',
-        'clientSubscriptions.subscription',
-        'scheduleDetails.barber',
-      ],
-      select: [
-        'idClient',
-        'name',
-        'email',
-        'phone',
-        'scheduleDetails',
-        'clientSubscriptions',
-      ],
-    });
+  async findOneById(idClient: number) {
+    const client = this.clientRepository.createQueryBuilder('client')
+    .select([
+      'client.idClient',
+      'client.name',
+      'client.email',
+      'client.phone',
+      'client.status',
+      'clientSubs.status',
+      'clientSubs.startDate',
+      'clientSubs.endDate',
+      'clientSubs.cancellationDate',
+      'clientSubs.idClientSubscription',
+      'clScheDetai.id',
+      'clScheDetai.status',
+      'barber.idBarber',
+      'barber.name',
+    ])
+    .leftJoin('client.clientSubscriptions', 'clientSubs')
+    .leftJoin('client.scheduleDetails', 'clScheDetai')
+    .leftJoin('clScheDetai.barber', 'barber')
+    .where('client.idClient = :idClient', { idClient })
+    .getOne();
 
     if (!client) 
       throw new NotFoundException('Client not found in database.');
     
       return client;
-  }
+  };
 
-  update(id: number, updateClientDto: UpdateClientDto) {
-    return `This action updates a #${id} client`;
-  }
+  async softDeleteClient(idClient: number) {
+    const client = await this.findOneById(idClient);
 
-  remove(id: number) {
-    return `This action removes a #${id} client`;
-  }
+    if (client.status === ClientStatusEnum.BLOCKED) {
+      throw new BadRequestException(`The client ${client.name} is already blocked.`);
+    }
+
+    client.status = ClientStatusEnum.BLOCKED,
+    await this.clientRepository.save(client);
+
+    return {
+      message: `The client ${client.name} was blocked with success`,
+      client: {
+        idClient: client.idClient,
+        status: client.status,
+      },
+    };
+  };
 }

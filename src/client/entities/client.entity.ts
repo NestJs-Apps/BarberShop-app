@@ -23,6 +23,9 @@ export class Client {
   phone: string;
 
   @Column()
+  status: string;
+
+  @Column()
   typeUser: string;
 
   @OneToMany(() => ScheduleDetails, scheduleDetails => scheduleDetails.client)

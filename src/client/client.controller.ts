@@ -52,13 +52,15 @@ export class ClientController {
     return this.clientService.reserveSchedule(reserveScheduleDto, serviceBarber);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto) {
-    return this.clientService.update(+id, updateClientDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto) {
+  //   return this.clientService.update(+id, updateClientDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.clientService.remove(+id);
+  @Delete('barber/blocked-client')
+  @ApiOperation({ summary: 'Barber blocked client' })
+  @ApiBearerAuth()
+  remove(@Query('idClient') idClient: number) {
+    return this.clientService.softDeleteClient(idClient);
   }
 }
