@@ -28,11 +28,11 @@ export class ScheduleController {
       return this.scheduleService.findAllSchedulings(paginationDto);
   }
 
-  @Get('/barber/:idBarber')
+  @Get('/:idSchedule')
   @ApiOperation({ summary: 'Barber find one schedule' })
   @ApiBearerAuth()
-    async findOne(@Param('idBarber', ParseIntPipe) idBarber: number) {
-      return this.scheduleService.findOneScheduling(idBarber);
+    async findOne(@Param('idSchedule', ParseIntPipe) idSchedule: number) {
+      return this.scheduleService.findOneScheduling(idSchedule);
     }
 
   @Patch(':id')

@@ -83,33 +83,31 @@ export class ScheduleService {
     }
   }
 
-  async findOneScheduling(idBarber: number) {
-    const schedules = await this.scheduleRepository.find({
-      where: {barber: { idBarber }},
-      relations: ['barber'],
-    });
+  async findOneScheduling(idSchedule: number) {
+    const schedule = await this.scheduleRepository.createQueryBuilder('schedule')
+    .select([
+      'schedule.idSchedule',
+      'schedule.date',
+      'barber.idBarber',
+      'barber.name',
+      'barber.email',
+      'barber.phone',
+    ])
+    .leftJoin('schedule.barber', 'barber')
+    .where('schedule.idSchedule = :idSchedule', { idSchedule })
+    .getOne();
   
-    if (!schedules.length) {
+    if (!schedule) {
       throw new NotFoundException('Barber dont have scheduling');
     };
 
-    schedules.forEach(schedule => {
-      schedule.date = moment(schedule.date)
-        .tz('America/Sao_Paulo')
-        .toDate();
-    });
+    const scheduleSubHours = subHours(schedule.date, 3);
 
-    let obj = {};
-    let response = {};
+    schedule.date = scheduleSubHours;
+    
+    await this.scheduleRepository.save(schedule);
 
-    for (const schedule of schedules) {
-      response =  Object.assign(obj, {
-        idSchedule: schedule.idSchedule,
-        date: schedule.date,
-      });
-    };
-
-    return response;
+    return schedule;
   }
 
   update(id: number, date: Date) {
