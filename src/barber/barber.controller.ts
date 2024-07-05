@@ -37,7 +37,7 @@ export class BarberController {
     return this.barberService.findClientScheduling(idBarber);
   };
 
-  @Patch('client/cancel-schedule-detail')
+  @Delete('client/cancel-schedule-detail')
   @ApiOperation({ summary: 'Barber cancelled scheduling details' })
   @ApiBearerAuth()
   async barberCancelledSchedulingDetail(

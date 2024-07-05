@@ -23,10 +23,10 @@ export class ScheduleController {
   @ApiOperation({ summary: 'Barber get all schedulings' })
   @ApiBearerAuth()
   @ApiQuery({ name: 'limit', type: Number, required: false })
-  @ApiQuery({ name: 'skip', type: Number, required: false })
+  @ApiQuery({ name: 'page', type: Number, required: false })
     async findAll(@Query() paginationDto: PaginationDto) {
-      return this.scheduleService.findAll(paginationDto);
-    }
+      return this.scheduleService.findAllSchedulings(paginationDto);
+  }
 
   @Get('/barber/:idBarber')
   @ApiOperation({ summary: 'Barber find one schedule' })

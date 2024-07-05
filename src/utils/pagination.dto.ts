@@ -8,8 +8,8 @@ export class PaginationDto {
   @IsNumber()
   limit: number = 10;
 
-  @ApiProperty({ name: 'skip' })
+  @ApiProperty({ name: 'page' })
   @Transform(({ value }) => parseInt(value), { toClassOnly: true })
   @IsNumber()
-  skip: number = 0;
+  page: number = 0;
 }

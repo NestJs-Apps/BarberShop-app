@@ -68,7 +68,7 @@ export class ClientService {
       throw new NotFoundException('Barber not found.');
     };
 
-    if (barber.schedules.length < 0) {
+    if (barber.schedules.length === 0) {
       throw new NotFoundException('Barber not have schedulings.');
     };
 
@@ -86,7 +86,7 @@ export class ClientService {
       )
     )
 
-    if (availableSchedule.length < 0) {
+    if (availableSchedule.length === 0) {
       throw new NotFoundException('No available schedules found.');
     }
 
@@ -173,28 +173,9 @@ export class ClientService {
   };
 
   async findOneById(idClient: number) {
-    const client = this.clientRepository.createQueryBuilder('client')
-    .select([
-      'client.idClient',
-      'client.name',
-      'client.email',
-      'client.phone',
-      'client.status',
-      'clientSubs.status',
-      'clientSubs.startDate',
-      'clientSubs.endDate',
-      'clientSubs.cancellationDate',
-      'clientSubs.idClientSubscription',
-      'clScheDetai.id',
-      'clScheDetai.status',
-      'barber.idBarber',
-      'barber.name',
-    ])
-    .leftJoin('client.clientSubscriptions', 'clientSubs')
-    .leftJoin('client.scheduleDetails', 'clScheDetai')
-    .leftJoin('clScheDetai.barber', 'barber')
-    .where('client.idClient = :idClient', { idClient })
-    .getOne();
+    const clients = await this.findAll();
+
+    const client = clients.find(client => client.idClient === idClient);
 
     if (!client) 
       throw new NotFoundException('Client not found in database.');

@@ -36,13 +36,23 @@ export class BarberService {
     const hashedPassword = await bcrypt.hash(createBarberDto.password, salt);
 
     const createBarber = this.barberRepository.create({
+      ...createBarberDto,
+      password: hashedPassword,
       codeBarber: uuid(),
       typeUser: TypeUserEnum.BARBER,
-      password: hashedPassword,
-      ...createBarberDto,
     });
 
-    return this.barberRepository.save(createBarber);
+    const savedBarber = await this.barberRepository.save(createBarber);
+
+    const response: Partial<Barber> = {
+      idBarber: savedBarber.idBarber,
+      name: savedBarber.name,
+      email: savedBarber.email,
+      cpf: savedBarber.cpf,
+      phone: savedBarber.phone,
+    };
+
+    return response;
   };
 
   findAll() {

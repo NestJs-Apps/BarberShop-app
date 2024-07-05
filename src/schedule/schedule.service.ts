@@ -58,12 +58,29 @@ export class ScheduleService {
     return response;
   };
 
-  async findAll(paginationDto: PaginationDto) {
-    return this.scheduleRepository.find({
-      skip: paginationDto.skip,
-      take: paginationDto.limit,
-      relations: ['barber'], 
-    });
+  async findAllSchedulings(paginationDto: PaginationDto) {
+    const { page, limit } = paginationDto;
+    
+    const [ results, total ] = await this.scheduleRepository.createQueryBuilder('schedule')
+    .select([
+      'schedule.idSchedule',
+      'schedule.date',
+      'barber.idBarber',
+      'barber.name',
+      'barber.email',
+      'barber.phone',
+    ])
+    .leftJoin('schedule.barber', 'barber')
+    .skip((page - 1) * limit)
+    .take(limit)
+    .getManyAndCount();
+
+    return {
+      data: results,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalItems: total,
+    }
   }
 
   async findOneScheduling(idBarber: number) {
