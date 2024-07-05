@@ -68,7 +68,14 @@ export class BarberService {
         'scheduleDetails.schedule',
         'scheduleDetails.client',
       ],
-      select: ['idBarber', 'name', 'email', 'schedules', 'scheduleDetails'],
+      select: [
+        'idBarber', 
+        'name',
+        'email',
+        'phone',
+        'schedules',
+        'scheduleDetails',
+      ],
     });
 
     if (!barber)
@@ -77,6 +84,7 @@ export class BarberService {
     const response: Partial<Barber> = {
       name: barber.name,
       email: barber.email,
+      phone: barber.phone,
       schedules: barber.schedules,
       scheduleDetails: barber.scheduleDetails,
     };
@@ -185,8 +193,21 @@ export class BarberService {
     }
   }
 
-  update(id: number, updateBarberDto: UpdateBarberDto) {
-    return `This action updates a #${id} barber`;
+  async updateBarber(idBarber: number, updateBarberDto: UpdateBarberDto) {
+    const barber = await this.findOneById(idBarber);
+
+    if (!barber.codeBarber) {
+      throw new BadRequestException('This barber dont have code')
+    };
+
+    await this.barberRepository.update(barber.idBarber, {
+      ...updateBarberDto,
+    });
+
+    return {
+      message: `Barber ${barber.name} was updated with success`,
+      idBarber: barber.idBarber,
+    };
   }
 
   remove(id: number) {

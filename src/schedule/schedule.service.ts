@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { Schedule } from './entities/schedule.entity';
 import { parse, subHours } from 'date-fns';
 import { PaginationDto } from 'src/utils/pagination.dto';
-import * as moment from 'moment-timezone';
 import { BarberService } from 'src/barber/barber.service';
 
 @Injectable()
@@ -104,7 +103,7 @@ export class ScheduleService {
     const scheduleSubHours = subHours(schedule.date, 3);
 
     schedule.date = scheduleSubHours;
-    
+
     await this.scheduleRepository.save(schedule);
 
     return schedule;

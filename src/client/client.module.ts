@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Barber } from 'src/barber/entities/barber.entity';
 import { Schedule } from 'src/schedule/entities/schedule.entity';
 import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
+import { ClientRepository } from './entities/client.repository';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.e
     ]),
   ],
   controllers: [ClientController],
-  providers: [ClientService],
+  providers: [ClientService, ClientRepository],
   exports: [ClientService],
 })
 export class ClientModule {}

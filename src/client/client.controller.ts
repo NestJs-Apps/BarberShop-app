@@ -5,6 +5,7 @@ import { UpdateClientDto } from './dto/update-client.dto';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ServiceBarberEnum } from 'src/utils/enums/service-barber.enum';
 import { ReserveScheduleDto } from './dto/reserve-schedule.dto';
+import { PaginationDto } from 'src/utils/pagination.dto';
 
 @ApiTags('Client')
 @Controller('client')
@@ -21,8 +22,10 @@ export class ClientController {
   @Get()
   @ApiOperation({ summary: 'Get all clients' })
   @ApiBearerAuth()
-  findAll() {
-    return this.clientService.findAll();
+  @ApiQuery({ name: 'limit', type: Number, required: false })
+  @ApiQuery({ name: 'page', type: Number, required: false })
+  async findAll(@Query() paginationDto: PaginationDto) {
+    return this.clientService.findAll(paginationDto);
   }
 
   @Get('find-available-schedules')
@@ -34,11 +37,11 @@ export class ClientController {
     return this.clientService.findAvailableSchedules(idBarber);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get one client' })
+  @Get(':idClient')
+  @ApiOperation({ summary: 'find one client' })
   @ApiBearerAuth()
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.clientService.findOneById(id);
+  async findOne(@Param('idClient', ParseIntPipe) idClient: number) {
+    return this.clientService.findOneById(idClient);
   }
 
   @Post('client/reserve-scheduling')

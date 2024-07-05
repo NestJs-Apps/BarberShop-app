@@ -13,12 +13,14 @@ import { StatusScheduleEnum } from 'src/utils/enums/status-schedule.enum';
 import { ServiceBarberEnum } from 'src/utils/enums/service-barber.enum';
 import { ReserveScheduleDto } from './dto/reserve-schedule.dto';
 import { ClientStatusEnum } from 'src/utils/enums/client-status.enum';
+import { ClientRepository } from './entities/client.repository';
+import { PaginationDto } from 'src/utils/pagination.dto';
 
 @Injectable()
 export class ClientService {
   constructor(
-    @InjectRepository(Client)
-    private readonly clientRepository: Repository<Client>,
+    @InjectRepository(ClientRepository)
+    private readonly clientRepository: ClientRepository,
     @InjectRepository(Barber)
     private barberRepository: Repository<Barber>,
     @InjectRepository(Schedule)
@@ -148,34 +150,12 @@ export class ClientService {
     return this.scheduleDetailsRepository.save(scheduleDetails);
   }
 
-  async findAll() {
-    return this.clientRepository.createQueryBuilder('client')
-      .select([
-        'client.idClient',
-        'client.name',
-        'client.email',
-        'client.phone',
-        'client.status',
-        'clientSubs.status',
-        'clientSubs.startDate',
-        'clientSubs.endDate',
-        'clientSubs.cancellationDate',
-        'clientSubs.idClientSubscription',
-        'clScheDetai.id',
-        'clScheDetai.status',
-        'barber.idBarber',
-        'barber.name',
-      ])
-      .leftJoin('client.clientSubscriptions', 'clientSubs')
-      .leftJoin('client.scheduleDetails', 'clScheDetai')
-      .leftJoin('clScheDetai.barber', 'barber')
-      .getMany();
+  async findAll(paginationDto: PaginationDto) {
+    return this.clientRepository.findAllClients(paginationDto);
   };
 
   async findOneById(idClient: number) {
-    const clients = await this.findAll();
-
-    const client = clients.find(client => client.idClient === idClient);
+    const client = await this.clientRepository.findOneClientById(idClient);
 
     if (!client) 
       throw new NotFoundException('Client not found in database.');
