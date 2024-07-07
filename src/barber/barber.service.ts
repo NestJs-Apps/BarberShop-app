@@ -11,12 +11,13 @@ import { subHours } from 'date-fns';
 import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
 import { StatusScheduleEnum } from 'src/utils/enums/status-schedule.enum';
 import { Client } from 'src/client/entities/client.entity';
+import { BarberRepository } from './entities/barber.repository';
 
 @Injectable()
 export class BarberService {
   constructor(
-    @InjectRepository(Barber)
-    private readonly barberRepository: Repository<Barber>,
+    @InjectRepository(BarberRepository)
+    private readonly barberRepository: BarberRepository,
     @InjectRepository(ScheduleDetails)
     private readonly scheduleDetailRepository: Repository<ScheduleDetails>,
   ) {}
@@ -59,37 +60,13 @@ export class BarberService {
     return this.barberRepository.find();
   }
 
-  async findOneById(id: number) {
-    const barber = await this.barberRepository.findOne({
-      where: { idBarber: id },
-      relations: [
-        'schedules',
-        'scheduleDetails',
-        'scheduleDetails.schedule',
-        'scheduleDetails.client',
-      ],
-      select: [
-        'idBarber', 
-        'name',
-        'email',
-        'phone',
-        'schedules',
-        'scheduleDetails',
-      ],
-    });
+  async findOneById(idBarber: number) {
+    const barber = await this.barberRepository.findBarberById(idBarber);
 
     if (!barber)
       throw new NotFoundException('Barber not found.');
 
-    const response: Partial<Barber> = {
-      name: barber.name,
-      email: barber.email,
-      phone: barber.phone,
-      schedules: barber.schedules,
-      scheduleDetails: barber.scheduleDetails,
-    };
-
-    return response;
+    return barber;
   }
 
   async findBarberWithSchedules(idBarber: number) {

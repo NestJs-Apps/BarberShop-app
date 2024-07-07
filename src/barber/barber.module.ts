@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Barber } from './entities/barber.entity';
 import { ScheduleDetailModule } from 'src/schedule-detail/schedule-detail.module';
 import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
+import { BarberRepository } from './entities/barber.repository';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.e
     forwardRef(() => ScheduleDetailModule),
   ],
   controllers: [BarberController],
-  providers: [BarberService],
+  providers: [BarberService, BarberRepository],
   exports: [BarberService],
 })
 export class BarberModule {}

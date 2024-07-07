@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreateClientDto } from './dto/create-client.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Client } from './entities/client.entity';
 import * as bcrypt from 'bcrypt';
 import { TypeUserEnum } from 'src/utils/enums/type-user.enum';
 import { Barber } from 'src/barber/entities/barber.entity';
