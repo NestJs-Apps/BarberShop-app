@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, forwardRef, Inject } from '@nestjs/common';
 import { CreateBarberDto } from './dto/create-barber.dto';
 import { UpdateBarberDto } from './dto/update-barber.dto';
 import { Repository } from 'typeorm';
@@ -12,6 +12,7 @@ import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.e
 import { StatusScheduleEnum } from 'src/utils/enums/status-schedule.enum';
 import { Client } from 'src/client/entities/client.entity';
 import { BarberRepository } from './entities/barber.repository';
+import { ScheduleService } from 'src/schedule/schedule.service';
 
 @Injectable()
 export class BarberService {
@@ -20,6 +21,8 @@ export class BarberService {
     private readonly barberRepository: BarberRepository,
     @InjectRepository(ScheduleDetails)
     private readonly scheduleDetailRepository: Repository<ScheduleDetails>,
+    @Inject(forwardRef(() => ScheduleService))
+    private readonly scheduleService: ScheduleService,
   ) {}
 
   async createBarber(createBarberDto: CreateBarberDto) {
@@ -117,6 +120,55 @@ export class BarberService {
       idClient: scheduleDetail.client.idClient,
       idBarber: scheduleDetail.barber.idBarber,
     };  
+  }
+
+  async barberConfirmedSchedule(idSchedule: number, idBarber: number, idScheduleDetail: number) {
+    const scheduleDetail = await this.scheduleDetailRepository.findOne({
+      where: {
+        id: idScheduleDetail,
+        barber: { idBarber },
+        schedule: { idSchedule },
+      },
+      relations: ['barber', 'schedule'],
+    });
+
+    if (!scheduleDetail) {
+      throw new NotFoundException('Schedule Details not found.');
+    }
+
+    const barber = await this.barberRepository.findBarberById(idBarber)
+    
+    if (!barber) {
+      throw new NotFoundException('Barber not found.');
+    }
+
+    const schedule = await this.scheduleService.findOneScheduling(idSchedule);
+
+    if (!schedule) {
+      throw new NotFoundException('Schedule not found.');
+    };
+
+    // Verifique se o agendamento pertence ao barbeiro
+    if (scheduleDetail.barber.idBarber !== idBarber) {
+      throw new BadRequestException('This schedule is not assigned to the specified barber.');
+    }
+
+    if (scheduleDetail.id !== idScheduleDetail && scheduleDetail.barber.idBarber !== barber.idBarber) {
+      throw new NotFoundException('ScheduleDetail not found for this schedule and barber.');
+    }
+
+      schedule.status = StatusScheduleEnum.CONFIRMED;
+      await this.scheduleService.saveSchedule(schedule);
+
+      await this.scheduleDetailRepository.update(scheduleDetail.id, {
+        status: StatusScheduleEnum.CONFIRMED,
+      });
+
+    return {
+      message: `Schedule: ${scheduleDetail.schedule.date} is confirmed.`,
+      idSchedule: scheduleDetail.schedule.idSchedule,
+      idScheduleDetail: scheduleDetail.id,
+    };
   }
 
   async findClientScheduling(idBarber: number) {

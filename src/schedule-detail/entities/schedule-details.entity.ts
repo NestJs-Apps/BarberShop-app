@@ -16,7 +16,7 @@ export class ScheduleDetails {
     status: string;
 
     @ManyToOne(() => Schedule, (schedule) => schedule.scheduleDetails)
-    @JoinColumn({ name: 'scheduleId' })
+    @JoinColumn({ name: 'scheduleId', referencedColumnName: 'idSchedule' })
     schedule: Schedule;
 
     @ManyToOne(() => Barber, (barber) => barber.scheduleDetails)

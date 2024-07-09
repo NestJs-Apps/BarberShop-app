@@ -125,12 +125,10 @@ export class ClientService {
     if (!barber) {
       throw new NotFoundException('Barber not found.');
     };
-
-    const reservedSchedule = schedule.scheduleDetails.some(
-      detail => detail.status === StatusScheduleEnum.CONFIRMED,
-    );
-
-    if (reservedSchedule) {
+      
+    if (schedule.status === StatusScheduleEnum.CONFIRMED ||
+        schedule.status === StatusScheduleEnum.PENDING
+    ) {
       throw new BadRequestException('Schedule already booked');
     };
 
@@ -138,12 +136,20 @@ export class ClientService {
       throw new BadRequestException('Client with canceled subscription');
     };
 
+    if (client.status === ClientStatusEnum.BLOCKED) {
+      throw new BadRequestException('Client blocked');
+    };
+
     const scheduleDetails = this.scheduleDetailsRepository.create({
       client,
       schedule,
       barber,
-      status: StatusScheduleEnum.CONFIRMED,
+      status: StatusScheduleEnum.PENDING,
       serviceDescription: serviceBarberEnum || null, 
+    });
+
+    await this.scheduleRepository.update(scheduleDetails.schedule.idSchedule, {
+      status: StatusScheduleEnum.PENDING,
     });
 
     return this.scheduleDetailsRepository.save(scheduleDetails);

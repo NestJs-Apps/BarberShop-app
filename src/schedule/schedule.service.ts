@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Schedule } from './entities/schedule.entity';
@@ -11,6 +11,7 @@ export class ScheduleService {
   constructor(
     @InjectRepository(Schedule)
     private readonly scheduleRepository: Repository<Schedule>,
+    @Inject(forwardRef(() => BarberService))
     private readonly barberService: BarberService,
   ) {}
 
@@ -87,12 +88,17 @@ export class ScheduleService {
     .select([
       'schedule.idSchedule',
       'schedule.date',
+      'schedule.status',
       'barber.idBarber',
       'barber.name',
       'barber.email',
       'barber.phone',
+      'details.id',
+      'details.status',
     ])
     .leftJoin('schedule.barber', 'barber')
+    .leftJoin('schedule.scheduleDetails', 'details')
+    .leftJoin('details.schedule', 'detailsSche')
     .where('schedule.idSchedule = :idSchedule', { idSchedule })
     .getOne();
   
@@ -107,6 +113,10 @@ export class ScheduleService {
     await this.scheduleRepository.save(schedule);
 
     return schedule;
+  }
+
+  async saveSchedule(schedule: Schedule) {
+    return this.scheduleRepository.save(schedule);
   }
 
   update(id: number, date: Date) {

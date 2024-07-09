@@ -8,18 +8,19 @@ export class BarberRepository extends Repository<Barber> {
     super(Barber, dataSource.createEntityManager());
   }
 
-  async findBarberById(idbarber: number) {
+  async findBarberById(idBarber: number) {
     return this.createQueryBuilder('barber')
       .select([
-        'barber.idbarber',
+        'barber.idBarber',
         'barber.name',
         'barber.email',
         'barber.phone',
         'schedules.idSchedule',
         'schedules.date',
+        'schedules.status',
       ])
       .leftJoin('barber.schedules', 'schedules')
-      .where('barber.idBarber = :idBarber', { idbarber })
+      .where('barber.idBarber = :idBarber', { idBarber })
       .getOne();
   }
 }

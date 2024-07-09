@@ -60,6 +60,17 @@ export class BarberController {
     return this.barberService.updateBarber(idBarber, updateBarberDto);
   }
 
+  @Put('confirm-schedule/:idBarber/:idSchedule/:idScheduleDetail')
+  @ApiOperation({ summary: 'barber confirmed scheduling' })
+  @ApiBearerAuth()
+  async confirmSchedule(
+    @Param('idBarber', ParseIntPipe) idBarber: number,
+    @Param('idSchedule', ParseIntPipe) idSchedule: number,
+    @Param('idScheduleDetail', ParseIntPipe) idScheduleDetail: number,
+  ) {
+    return this.barberService.barberConfirmedSchedule(idSchedule, idBarber, idScheduleDetail);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.barberService.remove(+id);

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn, JoinColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
 import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.entity';
 import { Barber } from 'src/barber/entities/barber.entity';
 import { IsDate } from 'class-validator';
@@ -14,6 +14,9 @@ export class Schedule {
   @Transform(({ value }) => new Date(value), { toClassOnly: true })
   @Expose({ name: 'date' })
   date: Date;
+
+  @Column({ default: null })
+  status: string;
 
   @ManyToOne(() => Barber, (barber) => barber.schedules)
   @JoinColumn({ name: 'barberId', referencedColumnName: 'idBarber' })
