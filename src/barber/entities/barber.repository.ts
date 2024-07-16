@@ -23,4 +23,20 @@ export class BarberRepository extends Repository<Barber> {
       .where('barber.idBarber = :idBarber', { idBarber })
       .getOne();
   }
+
+  async findOneByEmail(email: string) {
+    return this.createQueryBuilder('barber')
+    .select([
+      'barber.idBarber',
+      'barber.name',
+      'barber.email',
+      'barber.phone',
+      'schedules.idSchedule',
+      'schedules.date',
+      'schedules.status',
+    ])
+    .leftJoin('barber.schedules', 'schedules')
+    .where('barber.email = :email', { email })
+    .getOne();
+  }
 }

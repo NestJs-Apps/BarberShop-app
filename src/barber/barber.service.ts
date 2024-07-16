@@ -13,12 +13,15 @@ import { StatusScheduleEnum } from 'src/utils/enums/status-schedule.enum';
 import { Client } from 'src/client/entities/client.entity';
 import { BarberRepository } from './entities/barber.repository';
 import { ScheduleService } from 'src/schedule/schedule.service';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class BarberService {
   constructor(
     @InjectRepository(BarberRepository)
     private readonly barberRepository: BarberRepository,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     @InjectRepository(ScheduleDetails)
     private readonly scheduleDetailRepository: Repository<ScheduleDetails>,
     @Inject(forwardRef(() => ScheduleService))
@@ -45,6 +48,15 @@ export class BarberService {
       codeBarber: uuid(),
       typeUser: TypeUserEnum.BARBER,
     });
+
+    const user = this.userRepository.create({
+      email: createBarberDto.email,
+      password: hashedPassword,
+      typeUser: TypeUserEnum.BARBER,
+      barber: createBarber,
+    });
+
+    await this.userRepository.save(user);
 
     const savedBarber = await this.barberRepository.save(createBarber);
 
@@ -239,11 +251,17 @@ export class BarberService {
     };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} barber`;
-  }
+  async findOneByEmail(email: string) {
+    return this.barberRepository.findOneByEmail(email);
+  };
 
   async saveBarber(barber: Partial<Barber>) {
     return this.barberRepository.save(barber);
   };
+
+  remove(id: number) {
+    return `This action removes a #${id} barber`;
+  }
+
+  
 }

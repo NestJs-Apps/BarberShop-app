@@ -8,11 +8,13 @@ import { ScheduleDetails } from 'src/schedule-detail/entities/schedule-details.e
 import { BarberRepository } from './entities/barber.repository';
 import { Schedule } from 'src/schedule/entities/schedule.entity';
 import { ScheduleModule } from 'src/schedule/schedule.module';
+import { User } from 'src/user/entities/user.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Barber,
+      User,
       Schedule,
       ScheduleDetails,
   ]),

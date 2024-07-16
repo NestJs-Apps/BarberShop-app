@@ -44,10 +44,10 @@ export class ClientRepository extends Repository<Client> {
     const totalPage = Math.ceil(total / limit);
 
     return {
-      results,
       currentPage,
       totalItems,
       totalPage,
+      results,
     };
   };
 
@@ -73,6 +73,31 @@ export class ClientRepository extends Repository<Client> {
     .leftJoin('client.scheduleDetails', 'clScheDetai')
     .leftJoin('clScheDetai.barber', 'barber')
     .where('client.idClient = :idClient', { idClient })
+    .getOne();
+  }
+
+  async findOneByEmail(email: string) {
+    return this.createQueryBuilder('client')
+    .select([
+      'client.idClient',
+      'client.name',
+      'client.email',
+      'client.phone',
+      'client.status',
+      'clientSubs.status',
+      'clientSubs.startDate',
+      'clientSubs.endDate',
+      'clientSubs.cancellationDate',
+      'clientSubs.idClientSubscription',
+      'clScheDetai.id',
+      'clScheDetai.status',
+      'barber.idBarber',
+      'barber.name',
+    ])
+    .leftJoin('client.clientSubscriptions', 'clientSubs')
+    .leftJoin('client.scheduleDetails', 'clScheDetai')
+    .leftJoin('clScheDetai.barber', 'barber')
+    .where('client.email = :email', { email })
     .getOne();
   }
 }

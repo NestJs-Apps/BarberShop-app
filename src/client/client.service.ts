@@ -14,6 +14,8 @@ import { ReserveScheduleDto } from './dto/reserve-schedule.dto';
 import { ClientStatusEnum } from 'src/utils/enums/client-status.enum';
 import { ClientRepository } from './entities/client.repository';
 import { PaginationDto } from 'src/utils/pagination.dto';
+import { User } from 'src/user/entities/user.entity';
+import { subHours } from 'date-fns';
 
 @Injectable()
 export class ClientService {
@@ -21,17 +23,19 @@ export class ClientService {
     @InjectRepository(ClientRepository)
     private readonly clientRepository: ClientRepository,
     @InjectRepository(Barber)
-    private barberRepository: Repository<Barber>,
+    private readonly barberRepository: Repository<Barber>,
     @InjectRepository(Schedule)
-    private scheduleRepository: Repository<Schedule>,
+    private readonly scheduleRepository: Repository<Schedule>,
     @InjectRepository(ScheduleDetails)
-    private scheduleDetailsRepository: Repository<ScheduleDetails>,
+    private readonly scheduleDetailsRepository: Repository<ScheduleDetails>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async create(createClientDto: CreateClientDto) {
-    const client = await this.clientRepository.findOne({
-      where: { cpf: createClientDto.cpf },
-    });
+    const client = await this.clientRepository.findOneByEmail(
+      createClientDto.email,
+    );
 
     if (client) 
       throw new BadRequestException('Client already exists in database.');
@@ -48,10 +52,25 @@ export class ClientService {
       typeUser: TypeUserEnum.CLIENT,
       status: ClientStatusEnum.ALLOWED,
     });
-    
-    await this.clientRepository.save(clientEntity);
 
-    return clientEntity;
+    await this.clientRepository.save(clientEntity);
+    
+    await this.userRepository.save({
+      email: createClientDto.email,
+      password: hashedPassword,
+      typeUser: TypeUserEnum.CLIENT,
+      status: ClientStatusEnum.ALLOWED, 
+      client: clientEntity,
+    });
+
+    const {
+      password,
+      createdAt,
+      updatedAt, 
+      ...response
+    } = clientEntity;
+
+    return response;
   };
 
   async findAvailableSchedules(idBarber: number) {
@@ -91,8 +110,16 @@ export class ClientService {
       throw new NotFoundException('No available schedules found.');
     }
 
+    const corretcHoursSchedule = availableSchedule.map(sc => {
+      return {
+        idSchedule: sc.idSchedule,
+        date: subHours(sc.date, 3),
+        status: sc.status,
+      };
+    });
+
     // Retorna os agendamentos disponíveis.
-    return availableSchedule;
+    return corretcHoursSchedule;
   };
 
   async reserveSchedule(
@@ -167,6 +194,10 @@ export class ClientService {
     
       return client;
   };
+
+  async findOneByEmail(email: string) {
+    return this.clientRepository.findOneByEmail(email);
+  }
 
   async softDeleteClient(idClient: number) {
     const client = await this.findOneById(idClient);
